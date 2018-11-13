@@ -39,11 +39,11 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tinymce', # 富文本编辑器
-    'user', # 用户模块
-    'goods', # 商品模块
-    'cart', # 购物车模块
-    'order', # 订单模块
+    'tinymce',  # 富文本编辑器
+    'user',  # 用户模块
+    'goods',  # 商品模块
+    'cart',  # 购物车模块
+    'order',  # 订单模块
 )
 
 MIDDLEWARE_CLASSES = (
@@ -86,14 +86,14 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'dailyfresh',
         'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': '172.16.179.130',
-        'PORT':3306,
+        'PASSWORD': '123456',
+        'HOST': 'localhost',
+        'PORT': 3306,
     }
 }
 
 # django认证系统使用的模型类
-AUTH_USER_MODEL='user.User'
+AUTH_USER_MODEL = 'user.User'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
