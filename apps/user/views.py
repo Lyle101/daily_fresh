@@ -222,8 +222,12 @@ class LoginView(View):
                 # 记录用户的登录状态
                 login(request, user)
 
-                # 跳转到首页
-                response = redirect(reverse('goods:index'))  # HttpResponseRedirect
+                # 获取登录后所要跳转到的地址
+                # 默认跳转到首页
+                next_url = request.GET.get('next', reverse('goods:index'))
+
+                # 跳转到next_url
+                response = redirect(next_url) # HttpResponseRedirect
 
                 # 判断是否需要记住用户名
                 remember = request.POST.get('remember')
