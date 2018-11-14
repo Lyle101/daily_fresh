@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from user.models import User
+from celery_tasks.tasks import send_register_active_email
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 import re
@@ -154,16 +155,9 @@ class RegisterView(View):
         token = serializer.dumps(info)  # bytes
         token = token.decode()
 
-        # 发邮件
+        # 发邮件 -- 使用celery异步发送
+        send_register_active_email.delay(email, username, token)
 
-        # 组织邮件信息
-        subject = '天天生鲜欢迎信息'
-        message = ''
-        sender = settings.EMAIL_FROM
-        receiver = [email]
-        html_message = '<h1>%s, 欢迎您成为天天生鲜注册会员</h1>请点击下面链接激活您的账户<br/><a href="http://127.0.0.1:8000/user/active/%s">http://127.0.0.1:8000/user/active/%s</a>' % (username, token, token)
-
-        send_mail(subject, message, sender, receiver, html_message=html_message)
         # 返回应答, 跳转到首页
         return redirect(reverse('goods:index'))
 
