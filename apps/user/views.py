@@ -266,6 +266,12 @@ class UserInfoView(LoginRequiredMixin, View):
     '''用户中心-信息页'''
     def get(self, request):
         '''显示'''
+        # Django会给request对象添加一个属性request.user
+        # 如果用户未登录->user是AnonymousUser类的一个实例对象
+        # 如果用户登录->user是User类的一个实例对象
+        # request.user.is_authenticated()
+
+        # 除了你给模板文件传递的模板变量之外，django框架会把request.user也传给模板文件
         return render(request, 'user_center_info.html', {'page': 'user'})
 
 
