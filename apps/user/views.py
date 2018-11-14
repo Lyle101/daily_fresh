@@ -10,6 +10,7 @@ from user.models import User
 from celery_tasks.tasks import send_register_active_email
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
+from utils.mixin import LoginRequiredMixin
 import re
 import time
 # Create your views here.
@@ -261,7 +262,7 @@ class LogoutView(View):
 
 
 # /user
-class UserInfoView(View):
+class UserInfoView(LoginRequiredMixin, View):
     '''用户中心-信息页'''
     def get(self, request):
         '''显示'''
@@ -269,7 +270,7 @@ class UserInfoView(View):
 
 
 # /user/order
-class UserOrderView(View):
+class UserOrderView(LoginRequiredMixin, View):
     '''用户中心-订单页'''
     def get(self, request):
         '''显示'''
@@ -277,7 +278,7 @@ class UserOrderView(View):
 
 
 # /user/address
-class AddressView(View):
+class AddressView(LoginRequiredMixin, View):
     '''用户中心-地址页'''
     def get(self, request):
         '''显示'''
