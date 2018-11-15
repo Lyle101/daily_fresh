@@ -7,10 +7,12 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from user.models import User, Address
+from goods.models import GoodsSKU
 from celery_tasks.tasks import send_register_active_email
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import SignatureExpired
 from utils.mixin import LoginRequiredMixin
+from django_redis import get_redis_connection
 import re
 import time
 # Create your views here.
@@ -271,8 +273,42 @@ class UserInfoView(LoginRequiredMixin, View):
         # 如果用户登录->user是User类的一个实例对象
         # request.user.is_authenticated()
 
+        # 获取用户的个人信息
+        user = request.user
+        address = Address.objects.get_default_address(user)
+
+        # 获取用户的历史浏览记录
+        # from redis import StrictRedis
+        # sr = StrictRedis(host='localhost', port='6379', db=1)
+        con = get_redis_connection('default')
+
+        history_key = 'history_%d' % user.id
+
+        # 获取用户最新浏览的5个商品的id
+        sku_ids = con.lrange(history_key, 0, 4)  # [2,3,1]
+
+        # 从数据库中查询用户浏览的商品的具体信息
+        # goods_li = GoodsSKU.objects.filter(id__in=sku_ids)
+        #
+        # goods_res = []
+        # for a_id in sku_ids:
+        #     for goods in goods_li:
+        #         if a_id == goods.id:
+        #             goods_res.append(goods)
+
+        # 遍历获取用户浏览的商品信息
+        goods_li = []
+        for id in sku_ids:
+            goods = GoodsSKU.objects.get(id=id)
+            goods_li.append(goods)
+
+        # 组织上下文
+        context = {'page': 'user',
+                   'address': address,
+                   'goods_li': goods_li}
+
         # 除了你给模板文件传递的模板变量之外，django框架会把request.user也传给模板文件
-        return render(request, 'user_center_info.html', {'page': 'user'})
+        return render(request, 'user_center_info.html', context)
 
 
 # /user/order
