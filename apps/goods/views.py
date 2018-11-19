@@ -83,7 +83,7 @@ class DetailView(View):
         sku_orders = OrderGoods.objects.filter(sku=sku).exclude(comment='')
 
         # 获取新品信息
-        new_skus = GoodsSKU.objects.filter(type=sku.type).order_by('-create_time')
+        new_skus = GoodsSKU.objects.filter(type=sku.type).order_by('-create_time')[:2]
 
         # 获取用户购物车中商品的数目
         user = request.user
@@ -93,6 +93,16 @@ class DetailView(View):
             conn = get_redis_connection('default')
             cart_key = 'cart_%d' % user.id
             cart_count = conn.hlen(cart_key)
+
+            # 添加用户的历史记录
+            conn = get_redis_connection('default')
+            history_key = 'history_%d'%user.id
+            # 移除列表中的goods_id
+            conn.lrem(history_key, 0, goods_id)
+            # 把goods_id插入到列表的左侧
+            conn.lpush(history_key, goods_id)
+            # 只保存用户最新浏览的5条信息
+            conn.ltrim(history_key, 0, 4)
 
         # 组织模板上下文
         context = {'sku': sku, 'types': types,
