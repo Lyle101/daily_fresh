@@ -1,4 +1,5 @@
 {% extends 'base_detail_list.html' %}
+{% load staticfiles %}
 {% block title %}天天生鲜-商品详情{% endblock title %}
 
 {% block main_content %}
@@ -88,8 +89,62 @@
 	<div class="add_jump"></div>
 {% endblock bottom %}
 {% block bottomfiles %}
-	<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+	<script type="text/javascript" src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
 	<script type="text/javascript">
+        update_goods_amount()
+        // 计算商品的总价格
+        function update_goods_amount() {
+            // 获取商品的单价和数量
+            price = $('.show_pirze').children('em').text()
+            count = $('.num_show').val()
+            // 计算商品的总价
+            price = parseFloat(price)
+            count = parseInt(count)
+            amount = price*count
+            // 设置商品的总价
+            $('.total').children('em').text(amount.toFixed(2)+'元')
+        }
+
+        // 增加商品的数量
+        $('.add').click(function () {
+            // 获取商品原有的数目
+            count = $('.num_show').val()
+            // 加1
+            count = parseInt(count)+1
+            // 重新设置商品的数目
+            $('.num_show').val(count)
+            // 更新商品的总价
+            update_goods_amount()
+        })
+
+        // 减少商品的数量
+        $('.minus').click(function () {
+            // 获取商品原有的数目
+            count = $('.num_show').val()
+            // 减1
+            count = parseInt(count)-1
+            if (count <= 0){
+                count = 1
+            }
+            // 重新设置商品的数目
+            $('.num_show').val(count)
+            // 更新商品的总价
+            update_goods_amount()
+        })
+
+        // 手动输入商品的数量
+        $('.num_show').blur(function () {
+            // 获取用户输入的数目
+            count = $(this).val()
+            // 校验count是否合法
+            if (isNaN(count) || count.trim().length==0 || parseInt(count) <=0){
+                count = 1
+            }
+            // 重新设置商品的数目
+            $(this).val(parseInt(count))
+            // 更新商品的总价
+            update_goods_amount()
+        })
 		var $add_x = $('#add_cart').offset().top;
 		var $add_y = $('#add_cart').offset().left;
 
