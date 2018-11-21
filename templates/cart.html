@@ -1,4 +1,5 @@
 {% extends 'base_no_cart.html' %}
+{% load staticfiles %}
 {% block title %}天天生鲜-购物车{% endblock title %}
 {% block page_title %}购物车{% endblock page_title %}
 {% block body %}
@@ -38,3 +39,55 @@
 		<li class="col04"><a href="place_order.html">去结算</a></li>
 	</ul>
 {% endblock body %}
+{% block bottomfiles %}
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script>
+    // 计算被选中的商品的总件数和总价格
+    function update_page_info() {
+        // 获取所有被选中的商品的checkbox
+        // 获取所有被选中的商品所在的ul元素
+        total_count = 0
+        total_price = 0
+        $('.cart_list_td').find(':checked').parents('ul').each(function () {
+            // 获取商品的数目和小计
+            count = $(this).find('.num_show').val()
+            amount = $(this).children('.col07').text()
+            // 累加计算商品的总件数和总价格
+            count = parseInt(count)
+            amount = parseFloat(amount)
+            total_count += count
+            total_price += amount
+        })
+        // 设置被选中的商品的总件数和总价格
+        $('.settlements').find('em').text(total_price.toFixed(2))
+        $('.settlements').find('b').text(total_count)
+    }
+
+    // 商品的全选和全不选
+    $('.settlements').find(':checkbox').change(function () {
+        // 获取全选的checkbox的选中状态
+        is_checked = $(this).prop('checked')
+        // 遍历商品的对应的checkbox，设置这些checkbox的选中状态和全选的checkbox保持一致
+        $('.cart_list_td').find(':checkbox').each(function () {
+            $(this).prop('checked', is_checked)
+        })
+        // 更新页面的信息
+        update_page_info()
+    })
+
+    // 商品对应的checkbox状态发生改变时，设置全选checkbox的状态
+    $('.cart_list_td').find(':checkbox').change(function () {
+        // 获取页面上所有商品的数目
+        all_len = $('.cart_list_td').length
+        // 获取页面上被选中的商品的数目
+        checked_len = $('.cart_list_td').find(':checked').length
+        is_checked = true
+        if (checked_len < all_len){
+            is_checked = false
+        }
+        $('.settlements').find(':checkbox').prop('checked', is_checked)
+        // 更新页面的信息
+        update_page_info()
+    })
+    </script>
+{% endblock bottomfiles %}
