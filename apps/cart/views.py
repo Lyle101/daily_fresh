@@ -127,7 +127,7 @@ class CartUpdateView(View):
     def post(self, request):
         '''购物车记录更新'''
         user = request.user
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             # 用户未登录
             return JsonResponse({'res': 0, 'errmsg': '请先登录'})
 
@@ -164,5 +164,11 @@ class CartUpdateView(View):
         # 更新
         conn.hset(cart_key, sku_id, count)
 
+        # 计算用户购物车中商品的总件数 {'1':5, '2':3}
+        total_count = 0
+        vals = conn.hvals(cart_key)
+        for val in vals:
+            total_count += int(val)
+
         # 返回应答
-        return JsonResponse({'res': 5, 'message': '更新成功'})
+        return JsonResponse({'res': 5, 'total_count': total_count, 'message': '更新成功'})
