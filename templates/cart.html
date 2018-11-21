@@ -157,5 +157,37 @@
             $('.total_count').children('em').text(total)
         }
     })
+
+    // 购物车商品数量的减少
+    $('.minus').click(function () {
+        // 获取商品的id和商品的数量
+        sku_id = $(this).prev().attr('sku_id')
+        count = $(this).prev().val()
+
+        // 校验参数
+        count = parseInt(count)-1
+        if (count <= 0){
+            return
+        }
+
+        // 更新购物车中的记录
+        update_remote_cart_info(sku_id, count)
+
+        // 判断更新是否成功
+        if (error_update == false){
+            // 重新设置商品的数目
+            $(this).prev().val(count)
+            // 计算商品的小计
+            update_goods_amount($(this).parents('ul'))
+            // 获取商品对应的checkbox的选中状态，如果被选中，更新页面信息
+            is_checked = $(this).parents('ul').find(':checkbox').prop('checked')
+            if (is_checked){
+                // 更新页面信息
+                update_page_info()
+            }
+            // 更新页面上购物车商品的总件数
+            $('.total_count').children('em').text(total)
+        }
+    })
     </script>
 {% endblock bottomfiles %}
