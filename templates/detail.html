@@ -37,10 +37,12 @@
                     {% endfor %}
                 </ul>
             </div>
+
 			<div class="total">总价：<em>16.80元</em></div>
 			<div class="operate_btn">
+                {% csrf_token %}
 				<a href="javascript:;" class="buy_btn">立即购买</a>
-				<a href="javascript:;" class="add_cart" id="add_cart">加入购物车</a>
+				<a href="javascript:;" sku_id="{{ sku.id }}" class="add_cart" id="add_cart">加入购物车</a>
 			</div>
 		</div>
 	</div>
@@ -145,23 +147,43 @@
             // 更新商品的总价
             update_goods_amount()
         })
+
+        // 获取add_cart div元素左上角的坐标
 		var $add_x = $('#add_cart').offset().top;
 		var $add_y = $('#add_cart').offset().left;
 
+        // 获取show_count div元素左上角的坐标
 		var $to_x = $('#show_count').offset().top;
 		var $to_y = $('#show_count').offset().left;
 
-		$(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
-		$('#add_cart').click(function(){
-			$(".add_jump").stop().animate({
-				'left': $to_y+7,
-				'top': $to_x+7},
-				"fast", function() {
-					$(".add_jump").fadeOut('fast',function(){
-						$('#show_count').html(2);
-					});
 
-			});
+		$('#add_cart').click(function(){
+            // 获取商品id和商品数量
+            sku_id = $(this).attr('sku_id') // attr prop
+            count = $('.num_show').val()
+            csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            // 组织参数
+            params = {'sku_id':sku_id, 'count':count, 'csrfmiddlewaretoken':csrf}
+            // 发起ajax post请求，访问/cart/add, 传递参数:sku_id count
+            $.post('/cart/add', params, function (data) {
+                if (data.res == 5){
+                    // 添加成功
+                    $(".add_jump").css({'left':$add_y+80,'top':$add_x+10,'display':'block'})
+                    $(".add_jump").stop().animate({
+                        'left': $to_y+7,
+                        'top': $to_x+7},
+                        "fast", function() {
+                            $(".add_jump").fadeOut('fast',function(){
+                                // 重新设置用户购物车中商品的条目数
+                                $('#show_count').html(data.total_count);
+                            });
+			        });
+                }
+                else{
+                    // 添加失败
+                    alert(data.errmsg)
+                }
+            })
 		})
 	</script>
 {% endblock bottomfiles %}

@@ -21,7 +21,7 @@ class CartAddView(View):
     def post(self, request):
         '''购物车记录添加'''
         user = request.user
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             # 用户未登录
             return JsonResponse({'res': 0, 'errmsg': '请先登录'})
 
