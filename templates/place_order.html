@@ -92,7 +92,13 @@
                         'csrfmiddlewaretoken':csrf}
             // 发起ajax post请求，访问/order/commit, 传递的参数: addr_id pay_method, sku_ids
             $.post('/order/commit', params, function (data) {
-
+                if (data.res == 5){
+                    // 创建成功
+                    alert('创建成功')
+                }
+                else{
+                    alert(data.errmsg)
+                }
             })
 		});
 	</script>
