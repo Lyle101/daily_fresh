@@ -80,6 +80,7 @@ class OrderPlaceView(LoginRequiredMixin, View):
 
 # 前端传递的参数:地址id(addr_id) 支付方式(pay_method) 用户要购买的商品id字符串(sku_ids)
 # mysql事务: 一组sql操作，要么都成功，要么都失败
+# 高并发:秒杀
 class OrderCommitView(View):
     '''订单创建'''
     @transaction.atomic
@@ -144,11 +145,16 @@ class OrderCommitView(View):
             for sku_id in sku_ids:
                 # 获取商品的信息
                 try:
-                    sku = GoodsSKU.objects.get(id=sku_id)
+                    # select * from df_goods_sku where id=sku_id for update;
+                    sku = GoodsSKU.objects.select_for_update().get(id=sku_id)
                 except:
                     # 商品不存在
                     transaction.savepoint_rollback(save_id)
                     return JsonResponse({'res': 4, 'errmsg': '商品不存在'})
+
+                print('user:%d stock:%d'%(user.id, sku.stock))
+                import time
+                time.sleep(10)
 
                 # 从redis中获取用户所要购买的商品的数量
                 count = conn.hget(cart_key, sku_id)
