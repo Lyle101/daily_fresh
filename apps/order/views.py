@@ -166,8 +166,8 @@ class OrderCommitView(View):
                     new_sales = sku.sales + int(count)
 
                     print('user:%d times:%d name:%s stock:%d' % (user.id, i, sku.name, sku.stock))
-                    import time
-                    time.sleep(10)
+                    # import time
+                    # time.sleep(10)
 
                     # update df_goods_sku set stock=new_stock, sales=new_sales
                     # where id=sku_id and stock = origin_stock
