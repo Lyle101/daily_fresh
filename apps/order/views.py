@@ -143,49 +143,65 @@ class OrderCommitView(View):
 
             sku_ids = sku_ids.split(',')
             for sku_id in sku_ids:
-                # 获取商品的信息
-                try:
-                    # select * from df_goods_sku where id=sku_id for update;
-                    sku = GoodsSKU.objects.select_for_update().get(id=sku_id)
-                except:
-                    # 商品不存在
-                    transaction.savepoint_rollback(save_id)
-                    return JsonResponse({'res': 4, 'errmsg': '商品不存在'})
+                for i in range(3):
+                    # 获取商品的信息
+                    try:
+                        sku = GoodsSKU.objects.get(id=sku_id)
+                    except:
+                        # 商品不存在
+                        transaction.savepoint_rollback(save_id)
+                        return JsonResponse({'res': 4, 'errmsg': '商品不存在'})
 
-                print('user:%d stock:%d'%(user.id, sku.stock))
-                import time
-                time.sleep(10)
+                    # 从redis中获取用户所要购买的商品的数量
+                    count = conn.hget(cart_key, sku_id)
 
-                # 从redis中获取用户所要购买的商品的数量
-                count = conn.hget(cart_key, sku_id)
+                    # 判断商品的库存
+                    if int(count) > sku.stock:
+                        transaction.savepoint_rollback(save_id)
+                        return JsonResponse({'res': 6, 'errmsg': '商品库存不足'})
 
-                # 判断商品的库存
-                if int(count) > sku.stock:
-                    transaction.savepoint_rollback(save_id)
-                    return JsonResponse({'res':6, 'errmsg':'商品库存不足'})
-                # 向df_order_goods表中添加一条记录
-                OrderGoods.objects.create(order=order,
-                                          sku=sku,
-                                          count=count,
-                                          price=sku.price)
+                    # 更新商品的库存和销量
+                    origin_stock = sku.stock
+                    new_stock = origin_stock - int(count)
+                    new_sales = sku.sales + int(count)
 
-                # 更新商品的库存和销量
-                sku.stock -= int(count)
-                sku.sales += int(count)
-                sku.save()
+                    print('user:%d times:%d name:%s stock:%d' % (user.id, i, sku.name, sku.stock))
+                    import time
+                    time.sleep(10)
 
-                # 累加计算订单商品的总数量和总价格
-                amount = sku.price * int(count)
-                total_count += int(count)
-                total_price += amount
+                    # update df_goods_sku set stock=new_stock, sales=new_sales
+                    # where id=sku_id and stock = origin_stock
+                    res = GoodsSKU.objects.filter(id=sku_id, stock=origin_stock).update(
+                        stock=new_stock, sales=new_sales)
+                    if res == 0:
+                        if i == 2:
+                            # 尝试的第三次
+                            transaction.savepoint_rollback(save_id)
+                            return JsonResponse({'res': 7, 'errmsg': '下单失败2'})
+                        continue
+
+                    # 向df_order_goods表中添加一条记录
+                    OrderGoods.objects.create(order=order,
+                                              sku=sku,
+                                              count=count,
+                                              price=sku.price)
+
+                    # 累加计算订单商品的总数量和总价格
+                    amount = sku.price * int(count)
+                    total_count += int(count)
+                    total_price += amount
+
+                    # 跳出循环
+                    break
 
             # 更新订单信息表中的商品的总数量和总价格
             order.total_count = total_count
             order.total_price = total_price
             order.save()
         except Exception as e:
+            print('Error:', e)
             transaction.savepoint_rollback(save_id)
-            return JsonResponse({'res':7, 'errmsg':'下单失败'})
+            return JsonResponse({'res': 7, 'errmsg': '下单失败'})
 
         # 提交事务
         transaction.savepoint_commit(save_id)
