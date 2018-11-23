@@ -164,3 +164,6 @@ static/index.html
 
 # HAYSTACK 索引文件
 whoosh_index
+
+# AliPay keys
+apps/order/*.pem

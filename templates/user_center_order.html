@@ -1,6 +1,8 @@
 {% extends 'base_user_center.html' %}
+{% load staticfiles %}
 {% block right_content %}
 		<div class="right_content clearfix">
+                {% csrf_token %}
 				<h3 class="common_title2">全部订单</h3>
                 {% for order in order_page %}
 				<ul class="order_list_th w978 clearfix">
@@ -14,7 +16,7 @@
 						<tr>
 							<td width="55%">
                                 {% for order_sku in order.order_skus %}
-								<ul class="order_goods_list clearfix">					
+								<ul class="order_goods_list clearfix">
 									<li class="col01"><img src="{{ order_sku.sku.image.url }}"></li>
 									<li class="col02">{{ order_sku.sku.name }}<em>{{ order_sku.price }}元/{{ order_sku.sku.unite }}</em></li>
 									<li class="col03">{{ order_sku.count }}</li>
@@ -46,3 +48,33 @@
 				</div>
 		</div>
 {% endblock right_content %}
+{% block bottomfiles %}
+    <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+    <script>
+    $('.oper_btn').click(function () {
+        // 获取status
+        status = $(this).attr('status')
+        if (status == 1){
+            // 进行支付
+            // 获取订单id
+            order_id = $(this).attr('order_id')
+            csrf = $('input[name="csrfmiddlewaretoken"]').val()
+            // 组织参数
+            params = {'order_id':order_id, 'csrfmiddlewaretoken':csrf}
+            // 发起ajax post请求，访问/order/pay, 传递参数:order_id
+            $.post('/order/pay', params, function (data) {
+                if (data.res == 3){
+                    // 引导用户到支付页面
+                    window.open(data.pay_url)
+                }
+                else{
+                    alert(data.errmsg)
+                }
+            })
+        }
+        else{
+            // 其他情况
+        }
+    })
+    </script>
+{% endblock bottomfiles %}
