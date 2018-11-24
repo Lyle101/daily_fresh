@@ -51,6 +51,20 @@
 {% block bottomfiles %}
     <script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
     <script>
+    $('.oper_btn').each(function () {
+        // 获取支付状态
+        status = $(this).attr('status')
+        if (status == 1){
+            $(this).text('去支付')
+        }
+        else if (status == 4){
+            $(this).text('去评价')
+        }
+        else if (status == 5){
+            $(this).text('已完成')
+        }
+    })
+
     $('.oper_btn').click(function () {
         // 获取status
         status = $(this).attr('status')
@@ -84,8 +98,10 @@
                 }
             })
         }
-        else{
+        else if (status == 4){
             // 其他情况
+            // 跳转到评价页面
+            location.href = '/order/comment/'+order_id
         }
     })
     </script>
