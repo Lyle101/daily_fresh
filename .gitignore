@@ -167,3 +167,6 @@ whoosh_index
 
 # AliPay keys
 apps/order/*.pem
+
+# uWSGI
+uwsgi.pid
