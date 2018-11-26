@@ -169,4 +169,4 @@ whoosh_index
 apps/order/*.pem
 
 # uWSGI
-uwsgi.pid
+uwsgi*.pid
