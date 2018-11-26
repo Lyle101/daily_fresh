@@ -94,7 +94,7 @@ DATABASES = {
 }
 
 # django认证系统使用的模型类
-AUTH_USER_MODEL = 'user.User'
+AUTH_USER_MODEL = 'user.User'  # python manage.py createsuper
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -115,6 +115,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# 指定收集静态文件的路径 python manage.py collectstatic
+STATIC_ROOT = '/var/www/dailyfresh/static'
 
 # 富文本编辑器配置
 TINYMCE_DEFAULT_CONFIG = {
