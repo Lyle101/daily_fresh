@@ -344,7 +344,7 @@ class UserOrderView(LoginRequiredMixin, View):
             order.order_skus = order_skus
 
         # 分页
-        paginator = Paginator(orders, 1)
+        paginator = Paginator(orders, 5)
 
         # 获取第page页的内容
         try:
